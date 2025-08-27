@@ -1,0 +1,23 @@
+trigger:
+  branches:
+    include:
+      - master
+
+pool:
+  name: "Default"
+
+variables:
+- group: training_variables   # contains DATABRICKS_TOKEN securely
+- name: DATABRICKS_HOST
+  value: "https://adb-4399320255862065.5.azuredatabricks.net"
+
+steps:
+- checkout: self
+
+- script: |
+    pip install databricks-cli
+    databricks jobs run-now --job-id 185177888539902
+  displayName: 'Run Databricks Job'
+  env:
+    DATABRICKS_HOST: $(DATABRICKS_HOST)
+    DATABRICKS_TOKEN: $(DATABRICKS_TOKEN)
