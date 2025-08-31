@@ -1,0 +1,21 @@
+name: Trigger Databricks Job on Main Push
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  trigger-databricks-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger a Databricks Job Run (REST API)
+        env:
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}  # Set in GitHub secrets
+          JOB_ID: "4786768959146"                          # Replace with your job's ID
+        run: |
+          curl -X POST "$DATABRICKS_HOST/api/2.1/jobs/run-now" \
+            -H "Authorization: Bearer $DATABRICKS_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"job_id\": $JOB_ID }"
