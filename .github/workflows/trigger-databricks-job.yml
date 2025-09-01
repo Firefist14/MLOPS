@@ -9,13 +9,29 @@ jobs:
   trigger-databricks-job:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger a Databricks Job Run (REST API)
+      - uses: actions/checkout@v3
+      
+      # Step 1: Sync Databricks workspace repo folder with latest main branch
+      - name: Sync Databricks Repo Folder
         env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
-          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}  # Set in GitHub secrets
-          JOB_ID: "4786768959146"                          # Replace with your job's ID
+          REPO_ID: ${{ secrets.DATABRICKS_REPO_ID }}
+        run: |
+          curl -X PATCH "$DATABRICKS_HOST/api/2.0/repos/$REPO_ID" \
+            -H "Authorization: Bearer $DATABRICKS_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"branch": "main"}'
+      
+      # Step 2: Trigger the Databricks job
+      - name: Trigger Databricks Job Run
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          JOB_ID: "4786768959146"
         run: |
           curl -X POST "$DATABRICKS_HOST/api/2.1/jobs/run-now" \
             -H "Authorization: Bearer $DATABRICKS_TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{\"job_id\": $JOB_ID }"
+            -d "{\"job_id\": $JOB_ID}"
+
